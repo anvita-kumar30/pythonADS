@@ -5,15 +5,15 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import (
     classification_report, confusion_matrix, accuracy_score, roc_auc_score, roc_curve,
-    mean_squared_error, mean_absolute_error, r2_score
+    mean_squared_error, mean_absolute_error, r2_score, precision_score, recall_score, f1_score
 )
 from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 import math
+import numpy as np
 
 # Load the Churn Modelling dataset
 df = pd.read_csv("Churn_Modelling.csv")
-print(df.head())
 
 # Preprocessing the dataset
 # Encoding categorical variables: Gender and Geography
@@ -50,54 +50,61 @@ print("Confusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
 tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-print(f"True Negatives: {tn}, False Positives: {fp}, False Negatives: {fn}, True Positives: {tp}")
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print("Error:", 1 - accuracy_score(y_test, y_pred))
-print("ROC AUC Score:", roc_auc_score(y_test, y_pred))
-
-# Specificity and False Positive Rate
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)  # Sensitivity
 specificity = tn / (tn + fp)
-print("Specificity:", specificity)
-print("False Positive Rate:", 1 - specificity)
+fpr = 1 - specificity  # False positive rate
+f1 = f1_score(y_test, y_pred)
+geometric_mean = math.sqrt(recall * specificity)
+roc_auc = roc_auc_score(y_test, y_pred)
+
+print(f"Accuracy: {accuracy}")
+print(f"Error Rate: {error_rate}")
+print(f"Precision: {precision}")
+print(f"Recall (Sensitivity): {recall}")
+print(f"Specificity: {specificity}")
+print(f"False Positive Rate: {fpr}")
+print(f"F1 Score: {f1}")
+print(f"Geometric Mean: {geometric_mean}")
+print(f"ROC AUC Score: {roc_auc}")
 
 # Plotting ROC Curve
-fpr, tpr, thresholds = roc_curve(y_test, y_pred)
-plt.plot(fpr, tpr)
+fpr_values, tpr_values, _ = roc_curve(y_test, y_pred)
+plt.plot(fpr_values, tpr_values, label='ROC Curve')
+plt.plot([0, 1], [0, 1], 'k--')  # Diagonal line
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC Curve')
+plt.legend()
 plt.show()
 
 # Regression for continuous variables
 X = df_scaled['CreditScore'].values.reshape(-1, 1)
 y = df_scaled['Balance']
 
-# Karl Pearson's coefficient
+# Pearson Correlation Coefficient
 corr, _ = pearsonr(X.flatten(), y)
 print("\nRegression Metrics:")
-print("Karl Pearson's Coefficient:", corr)
+print("Pearson Correlation Coefficient:", corr)
 
 # Linear Regression
 reg = LinearRegression()
 reg.fit(X, y)
 y_pred_reg = reg.predict(X)
 
-# R-squared
+# Regression performance metrics
 r_squared = r2_score(y, y_pred_reg)
-print("R-squared:", r_squared)
-
-# Mean Squared Error
 mse = mean_squared_error(y, y_pred_reg)
-print("Mean Squared Error (MSE):", mse)
-
-# Root Mean Squared Error
 rmse = math.sqrt(mse)
-print("Root Mean Squared Error (RMSE):", rmse)
-
-# Mean Absolute Error
 mae = mean_absolute_error(y, y_pred_reg)
-print("Mean Absolute Error (MAE):", mae)
+mape = np.mean(np.abs((y - y_pred_reg) / y)) * 100  # Mean Absolute Percentage Error
+rmsre = np.sqrt(np.mean((y - y_pred_reg) ** 2) / np.mean(y ** 2))  # Root Mean Squared Relative Error
 
-# Mean Absolute Percentage Error
-mape = (mae / max(y)) * 100
-print("Mean Absolute Percentage Error (MAPE):", mape, "%")
+print(f"R-squared: {r_squared}")
+print(f"Mean Squared Error (MSE): {mse}")
+print(f"Root Mean Squared Error (RMSE): {rmse}")
+print(f"Mean Absolute Error (MAE): {mae}")
+print(f"Mean Absolute Percentage Error (MAPE): {mape}%")
+print(f"Root Mean Squared Relative Error (RMSRE): {rmsre}")
