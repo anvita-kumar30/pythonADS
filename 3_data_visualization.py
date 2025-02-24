@@ -1,54 +1,86 @@
+# Import necessary libraries
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
+import bokeh.plotting as bp
+from bokeh.models import HoverTool
+from bokeh.io import output_notebook, show
+from pandas.plotting import scatter_matrix
 
 # Load dataset
-df = pd.read_csv("diamonds.csv")
+file_path = "diamonds.csv"
+df = pd.read_csv(file_path)
 
 # Strip spaces from column names
 df.columns = df.columns.str.strip()
 
 # Display some basic information about the dataset
-# print(df.describe())
-# print(df.info())
-# print(df.corr())
-# print(df.count())
+print(df.info())
+print(df.describe())
 
-# Scatter plot
-plt.scatter(df['carat'], df['price'], c='blue')
+# Univariate Visualization
+# 1. Histogram
+plt.figure(figsize=(8,5))
+plt.hist(df['price'], bins=30, color='skyblue', edgecolor='black')
+plt.title('Histogram of Diamond Prices')
+plt.xlabel('Price')
+plt.ylabel('Frequency')
+plt.show()
+
+# 2. Bar Chart
+plt.figure(figsize=(8,5))
+df['cut'].value_counts().plot(kind='bar', color='coral', edgecolor='black')
+plt.title('Count of Diamonds by Cut')
+plt.xlabel('Cut')
+plt.ylabel('Count')
+plt.show()
+
+# 3. Quartile Plot (Boxplot)
+plt.figure(figsize=(8,5))
+sns.boxplot(x=df['carat'])
+plt.title('Boxplot of Diamond Carat')
+plt.show()
+
+# 4. Distribution Chart (KDE plot)
+plt.figure(figsize=(8,5))
+sns.kdeplot(df['depth'], shade=True, color='green')
+plt.title('Distribution of Diamond Depth')
+plt.show()
+
+# Multivariate Visualization
+# 1. Scatterplot
+plt.figure(figsize=(8,5))
+sns.scatterplot(x=df['carat'], y=df['price'], alpha=0.5)
+plt.title('Carat vs Price Scatterplot')
 plt.xlabel('Carat')
 plt.ylabel('Price')
-plt.title('Carat vs Price')
 plt.show()
 
-# Distribution plot
-g = sns.displot(df['depth'])  # Distribution plot for depth
-g.fig.suptitle('Distribution of Depth')
+# 2. Scatter Matrix
+scatter_matrix(df[['carat', 'depth', 'table', 'price']], figsize=(8, 8), alpha=0.2)
 plt.show()
 
-# Joint plot (Bivariate and Univariate)
-sns.jointplot(x='carat', y='price', data=df)
+# 3. Bubble Chart using Plotly
+fig = px.scatter(df, x="carat", y="price", size="depth", color="cut", hover_name="cut", title="Bubble Chart: Carat vs Price with Depth Size")
+# fig.show()
+# Save the plot as an HTML file for PyCharm users
+fig.write_html("bubble_chart.html")
+print("Bubble Chart saved as 'bubble_chart.html'. Open it in a browser to view.")
+
+# 4. Density Chart
+plt.figure(figsize=(8,5))
+sns.kdeplot(x=df['carat'], y=df['price'], cmap="Blues", fill=True)
+plt.title("Density Chart: Carat vs Price")
 plt.show()
 
-# Pair plot (Pairwise relationships in the dataset)
-sns.pairplot(df[['carat', 'price', 'depth', 'table', 'x']])
+# 5. Heatmap
+# Compute correlation matrix (Dropping non-numeric columns)
+corr_matrix = df.select_dtypes(include=['number']).corr()
+plt.figure(figsize=(8,5))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', linewidths=0.5)
+plt.title('Heatmap of Correlation Matrix')
 plt.show()
 
-# Rug plot with scatter plot
-plt.figure(figsize=(15, 5))
-sns.scatterplot(data=df.head(20), x="carat", y="price")
-sns.rugplot(data=df.head(20), x='carat')
-plt.show()
-
-# Histogram of 'price'
-df['price'].hist()
-plt.title('Histogram of Diamond Price')
-plt.show()
-
-# Andrews curve plot (Multivariate visualization)
-df1 = df[['carat', 'depth', 'table', 'price']]
-df1 = df1.sample(n=50)  # Sampling 50 random rows
-andrew = pd.plotting.andrews_curves(df1, 'carat')
-plt.title('Andrew\'s Curves')
-plt.show()
+print("Data Visualization Completed Successfully!")
