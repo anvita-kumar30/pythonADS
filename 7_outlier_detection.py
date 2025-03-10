@@ -34,15 +34,15 @@ plt.show()
 # Identify outliers based on threshold (e.g., top 5% highest distances)
 threshold = np.percentile(k_distances, 95)  # Top 5% considered as outliers
 outlier_indices_knn = np.where(k_distances > threshold)[0]
-print("Outliers detected using K-NN:", outlier_indices_knn)
+print("Outliers detected using K-NN:", outlier_indices_knn) # 8 outliers detected
 
-### Density-Based Outlier Detection (DBSCAN) ###
+### Density-Based Spatial Clustering of Applications with Noise (DBSCAN) Outlier Detection ###
 dbscan = DBSCAN(eps=0.5, min_samples=5)  # Adjust 'eps' as needed
 labels = dbscan.fit_predict(X)
 
 # Outliers are labeled as -1 in DBSCAN
 outlier_indices_dbscan = np.where(labels == -1)[0]
-print("Outliers detected using DBSCAN:", outlier_indices_dbscan)
+print("Outliers detected using DBSCAN:", outlier_indices_dbscan) # 17 outliers detected
 
 # Visualize DBSCAN clustering
 plt.figure(figsize=(8, 5))
