@@ -48,8 +48,11 @@ def adf_test(series):
 
 adf_test(ts)  # The test already shows it's stationary
 
-# Fit ARIMA model (No differencing needed, so d=0)
-model = ARIMA(ts, order=(0,1,1))  # Adjusted based on previous results
+# Fit AutoRegressive Integrated Moving Average (ARIMA) model (No differencing needed, so d=0)
+model = ARIMA(ts, order=(2,1,2))  # Adjusted based on previous results (p,d,q)
+# p (AutoRegressive - AR term) = 0 → No past values are used in forecasting.
+# d (Integrated - Differencing term) = 1 → The data is differenced once to make it stationary.
+# q (Moving Average - MA term) = 1 → One past error term is used to improve predictions.
 arima_result = model.fit()
 print(arima_result.summary())
 
@@ -58,10 +61,13 @@ train_size = int(len(ts) * 0.8)
 train, test = ts[:train_size], ts[train_size:]
 
 # Fit the model on training data
-train_model = ARIMA(train, order=(0,1,1)).fit()
+train_model = ARIMA(train, order=(2,1,2)).fit()
 
 # Forecast the test period
 test_forecast = train_model.forecast(steps=len(test))
+
+# Convert to a pandas Series with the same index as the test data
+test_forecast = pd.Series(test_forecast.values, index=test.index)
 
 # Plot actual vs predicted
 plt.figure(figsize=(12, 5))
