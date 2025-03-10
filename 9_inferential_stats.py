@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from scipy.stats import ttest_ind, ttest_1samp, f_oneway, zscore
+import matplotlib.pyplot as plt
+from scipy.stats import norm, poisson, ttest_ind, ttest_1samp, f_oneway, t
 
 # Load dataset
 df = pd.read_csv('diamonds.csv')
@@ -8,6 +9,25 @@ df = pd.read_csv('diamonds.csv')
 # ---- Population Statistics ----
 population_mean = df['price'].mean()
 population_std_dev = df['price'].std()
+
+# ---- Normal & Poisson Distributions ----
+
+# Normal Distribution
+x = np.linspace(population_mean - 3*population_std_dev, population_mean + 3*population_std_dev, 100)
+y = norm.pdf(x, population_mean, population_std_dev)
+plt.plot(x, y, label='Normal Distribution', color='b')
+plt.title('Normal Distribution of Diamond Prices')
+plt.legend()
+plt.show()
+
+# Poisson Distribution
+lambda_poisson = population_mean
+x_poisson = np.arange(0, lambda_poisson * 2)
+y_poisson = poisson.pmf(x_poisson, lambda_poisson)
+plt.bar(x_poisson, y_poisson, alpha=0.6, color='b', label='Poisson Distribution')
+plt.title('Poisson Distribution of Diamond Prices')
+plt.legend()
+plt.show()
 
 # ---- Hypothesis Testing ----
 
@@ -36,11 +56,20 @@ sample_std_dev = sample['price'].std()
 Z_stat = (sample_mean - population_mean) / (population_std_dev / np.sqrt(sample_size))
 Z_critical_value = 1.96  # 5% significance level (two-tailed)
 
+# Confidence Interval for Population Mean
+conf_interval = norm.interval(0.95, loc=population_mean, scale=population_std_dev/np.sqrt(sample_size))
+
+# Sampling Error Calculation
+sampling_error = population_std_dev / np.sqrt(sample_size)
+
 # T-Test for small sample (n < 30)
 sample_small = df.sample(n=20, random_state=42)
 sample_small_mean = sample_small['price'].mean()
 sample_small_std_dev = sample_small['price'].std()
 t_stat_small = (sample_small_mean - population_mean) / (sample_small_std_dev / np.sqrt(20))
+
+# Confidence Interval for Small Sample
+conf_interval_small = t.interval(0.95, df=19, loc=sample_small_mean, scale=sample_small_std_dev / np.sqrt(20))
 
 # ---- Print Results ----
 print("\nInferential Statistics:")
@@ -73,5 +102,14 @@ if abs(Z_stat) > Z_critical_value:
 else:
     print("Fail to reject H0: No significant difference in sample mean.")
 
+# Confidence Interval for Population Mean
+print(f"\nConfidence Interval for Population Mean (95%): {conf_interval}")
+
+# Sampling Error
+print(f"\nSampling Error: {sampling_error:.3f}")
+
 # Small Sample T-Test
 print(f"\nSmall Sample T-Test (n=20): t-stat: {t_stat_small:.3f}")
+
+# Confidence Interval for Small Sample
+print(f"\nConfidence Interval for Small Sample Mean (95%): {conf_interval_small}")
