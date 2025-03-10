@@ -19,7 +19,7 @@ data = pd.get_dummies(data, drop_first=True)
 data['EstimatedSalary'] = pd.to_numeric(data['EstimatedSalary'], errors='coerce')
 
 # Define features (X) and target variable (y)
-X = data.drop(columns=['Exited'])  # Features
+X = data.drop(columns=['Exited'])  # All columns except 'Exited' (independent variables) Features
 y = data['Exited']  # Target variable
 
 # Check class imbalance
@@ -43,8 +43,8 @@ y_pred = clf.predict(X_test)
 # Evaluate the model before applying SMOTE
 print("Classification Report (Before SMOTE):\n", classification_report(y_test, y_pred))
 
-# Apply SMOTE to balance the dataset
-smote = SMOTE(sampling_strategy=0.5, k_neighbors=5, random_state=42)
+# Apply SMOTE (Synthetic Minority Over-sampling Technique) to balance the dataset
+smote = SMOTE(sampling_strategy=0.5, k_neighbors=5, random_state=42) # minority class will be 50% of the majority class
 X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
 # Check class distribution after SMOTE
@@ -64,3 +64,7 @@ y_pred_smote = clf_smote.predict(X_test)
 
 # Evaluate the model after SMOTE
 print("Classification Report (After SMOTE):\n", classification_report(y_test, y_pred_smote))
+
+# Recall (Exited = 1) increased from 46% → 56% (Now detecting more churn cases).
+# Precision (Exited = 1) dropped from 78% → 67% (More false positives, but recall is better).
+# Accuracy remains similar (85%), but the model is now better at predicting churn.
