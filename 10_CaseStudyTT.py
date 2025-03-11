@@ -188,6 +188,7 @@ plt.show()
 # sns.scatterplot(x=df['Distance'], y=df['TotalTime'], hue=df['Outlier'], palette='coolwarm')
 # plt.title("DBSCAN Outlier Detection")
 # plt.show()
+
 # Fit Nearest Neighbors model
 nearest_neighbors = NearestNeighbors(n_neighbors=5)
 neighbors = nearest_neighbors.fit(X)
