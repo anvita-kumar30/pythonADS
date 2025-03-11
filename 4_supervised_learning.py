@@ -80,12 +80,6 @@ plt.title('ROC Curve')
 plt.legend()
 plt.show()
 
-
-
-
-# Load the Churn Modelling dataset
-# df = pd.read_csv("swedish_insurance.csv")
-
 # Regression for continuous variables
 X = df_scaled['CreditScore'].values.reshape(-1, 1)
 y = df_scaled['Balance']
