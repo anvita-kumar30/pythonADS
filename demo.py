@@ -16,7 +16,6 @@ from sklearn.cluster import KMeans, DBSCAN
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from scipy import stats
-from sklearn.neighbors import NearestNeighbors
 
 # Suppress warnings
 warnings.filterwarnings("ignore")
@@ -48,10 +47,9 @@ df.drop(columns=['Comments', 'Date'], inplace=True)
 df.replace('-', np.nan, inplace=True)
 df = df.apply(pd.to_numeric, errors='coerce')
 
-# Data Cleaning (Handling Missing Values)
-numeric_cols = df.select_dtypes(include=[np.number]).columns
-imputer = SimpleImputer(strategy='mean')
-df[numeric_cols] = imputer.fit_transform(df[numeric_cols])
+# Impute missing values with median
+imputer = SimpleImputer(strategy='median')
+df[df.columns] = imputer.fit_transform(df)
 
 # Data Exploration
 print("Dataset Overview:\n", df.head())
@@ -82,10 +80,6 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train_scaled, y_train)
-y_pred = knn.predict(X_test_scaled)
-
 # Grid Search for best KNN parameters
 param_grid = {'n_neighbors': [3, 5, 7, 9]}
 grid_search = GridSearchCV(KNeighborsClassifier(), param_grid, cv=5, scoring='accuracy')
@@ -93,20 +87,20 @@ grid_search.fit(X_train_scaled, y_train)
 best_knn = grid_search.best_estimator_
 
 # Train KNN with best parameters
-# best_knn.fit(X_train_scaled, y_train)
-# y_pred = best_knn.predict(X_test_scaled)
+best_knn.fit(X_train_scaled, y_train)
+y_pred = best_knn.predict(X_test_scaled)
 
 # Classification Metrics
 print("Classification Report:\n", classification_report(y_test, y_pred))
 print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
 # ROC Curve
-y_prob = knn.predict_proba(X_test_scaled)[:, 1]
+y_prob = best_knn.predict_proba(X_test_scaled)[:, 1]
 fpr, tpr, _ = roc_curve(y_test, y_prob)
 roc_auc = auc(fpr, tpr)
 
 plt.figure(figsize=(10, 6))
-plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {roc_auc:.2f})')
+plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {roc_auc:.2f}')
 plt.plot([0, 1], [0, 1], linestyle='--', color='gray')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
@@ -125,11 +119,11 @@ X_test_scaled = scaler.transform(X_test)
 param_grid = {'n_estimators': [50, 100, 150], 'max_depth': [None, 10, 20]}
 grid_search = GridSearchCV(RandomForestRegressor(random_state=42), param_grid, cv=5, scoring='r2')
 grid_search.fit(X_train_scaled, y_train)
-model = grid_search.best_estimator_
+best_rf = grid_search.best_estimator_
 
 # Train RandomForest with best parameters
-model.fit(X_train_scaled, y_train)
-y_pred = model.predict(X_test_scaled)
+best_rf.fit(X_train_scaled, y_train)
+y_pred = best_rf.predict(X_test_scaled)
 
 # Evaluation Metrics
 print("MAE:", mean_absolute_error(y_test, y_pred))
@@ -137,16 +131,15 @@ print("MSE:", mean_squared_error(y_test, y_pred))
 print("R2 Score:", r2_score(y_test, y_pred))
 
 # Feature Importance
-feature_importance = pd.Series(model.feature_importances_, index=X.columns).sort_values(ascending=False)
+feature_importance = pd.Series(best_rf.feature_importances_, index=X.columns).sort_values(ascending=False)
 print("\nFeature Importance (in %):\n", (feature_importance * 100).round(2))
 
 # Unsupervised Learning - Clustering
-# scaler = StandardScaler()
-# X_scaled = scaler.fit_transform(X)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
 
 kmeans = KMeans(n_clusters=3, random_state=42)
-kmeans.fit(X)
-df['Cluster'] = kmeans.labels_
+df['Cluster'] = kmeans.fit_predict(X_scaled)
 
 sns.scatterplot(x=df.iloc[:, 0], y=df.iloc[:, 1], hue=df['Cluster'], palette='viridis')
 plt.title("K-Means Clustering of Travel Data")
@@ -180,42 +173,14 @@ plt.legend()
 plt.show()
 
 # Outlier Detection - DBSCAN
-# dbscan = DBSCAN(eps=3, min_samples=5)
-# df['Outlier'] = dbscan.fit_predict(X)
-# outliers = df[df['Outlier'] == -1]
-# print("Detected Outliers:", outliers)
-#
-# sns.scatterplot(x=df['Distance'], y=df['TotalTime'], hue=df['Outlier'], palette='coolwarm')
-# plt.title("DBSCAN Outlier Detection")
-# plt.show()
-# Fit Nearest Neighbors model
-nearest_neighbors = NearestNeighbors(n_neighbors=5)
-neighbors = nearest_neighbors.fit(X)
-distances, indices = neighbors.kneighbors(X)
+dbscan = DBSCAN(eps=2, min_samples=5)
+df['Outlier'] = dbscan.fit_predict(X_scaled)
+outliers = df[df['Outlier'] == -1]
+print("Detected Outliers:", outliers)
 
-# Sort distances for k-distance graph
-sorted_distances = np.sort(distances[:, -1])
-
-# Plot the K-Distance Graph
-plt.figure(figsize=(10, 5))
-plt.plot(sorted_distances)
-plt.title("K-Distance Graph for Outlier Detection")
-plt.xlabel("Data Points (sorted)")
-plt.ylabel("Distance to 5th Nearest Neighbor")
-plt.show()
-
-# Detect Outliers - Choose Threshold (Elbow Point from Graph)
-outlier_threshold = sorted_distances[int(len(sorted_distances) * 0.98)]  # Top 2% as outliers
-outliers = np.where(distances[:, -1] > outlier_threshold)[0]
-df['Outlier'] = 0
-df.loc[outliers, 'Outlier'] = 1
-
-# Visualizing Outliers
 sns.scatterplot(x=df['Distance'], y=df['TotalTime'], hue=df['Outlier'], palette='coolwarm')
-plt.title("K-Distance Outlier Detection")
+plt.title("DBSCAN Outlier Detection")
 plt.show()
-
-print("Detected Outliers:", df[df['Outlier'] == 1])
 
 # Inferential Statistics - Hypothesis Testing
 t_stat, p_value = stats.ttest_1samp(df['TotalTime'], df['TotalTime'].mean())

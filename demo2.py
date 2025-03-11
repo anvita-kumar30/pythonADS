@@ -16,7 +16,6 @@ from sklearn.cluster import KMeans, DBSCAN
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from scipy import stats
-from sklearn.neighbors import NearestNeighbors
 
 # Suppress warnings
 warnings.filterwarnings("ignore")
@@ -180,18 +179,29 @@ plt.legend()
 plt.show()
 
 # Outlier Detection - DBSCAN
-# dbscan = DBSCAN(eps=3, min_samples=5)
-# df['Outlier'] = dbscan.fit_predict(X)
-# outliers = df[df['Outlier'] == -1]
-# print("Detected Outliers:", outliers)
-#
-# sns.scatterplot(x=df['Distance'], y=df['TotalTime'], hue=df['Outlier'], palette='coolwarm')
-# plt.title("DBSCAN Outlier Detection")
-# plt.show()
+dbscan = DBSCAN(eps=3, min_samples=5)
+df['Outlier'] = dbscan.fit_predict(X)
+outliers = df[df['Outlier'] == -1]
+print("Detected Outliers:", outliers)
+
+sns.scatterplot(x=df['Distance'], y=df['TotalTime'], hue=df['Outlier'], palette='coolwarm')
+plt.title("DBSCAN Outlier Detection")
+plt.show()
+
+# Inferential Statistics - Hypothesis Testing
+t_stat, p_value = stats.ttest_1samp(df['TotalTime'], df['TotalTime'].mean())
+print("T-Test Statistic:", t_stat, " P-Value:", p_value)
+
+from sklearn.neighbors import NearestNeighbors
+
+# Standardizing the dataset for distance-based outlier detection
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df.drop(columns=['TotalTime']))
+
 # Fit Nearest Neighbors model
 nearest_neighbors = NearestNeighbors(n_neighbors=5)
-neighbors = nearest_neighbors.fit(X)
-distances, indices = neighbors.kneighbors(X)
+neighbors = nearest_neighbors.fit(X_scaled)
+distances, indices = neighbors.kneighbors(X_scaled)
 
 # Sort distances for k-distance graph
 sorted_distances = np.sort(distances[:, -1])
@@ -216,7 +226,3 @@ plt.title("K-Distance Outlier Detection")
 plt.show()
 
 print("Detected Outliers:", df[df['Outlier'] == 1])
-
-# Inferential Statistics - Hypothesis Testing
-t_stat, p_value = stats.ttest_1samp(df['TotalTime'], df['TotalTime'].mean())
-print("T-Test Statistic:", t_stat, " P-Value:", p_value)
