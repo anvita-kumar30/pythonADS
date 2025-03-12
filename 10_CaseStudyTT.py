@@ -1,5 +1,14 @@
 # CASE STUDY - Predicting Travel Time for Efficient Route Planning
 
+# 1. Data Preprocessing & Cleaning
+# 2. Data Visualization
+# 3. Supervised Learning - KNN Classification
+# 4. Regression - Random Forest Regressor
+# 5. Unsupervised Learning - K-Means Clustering
+# 6. Time Series Forecasting - ARIMA Model
+# 7. Outlier Detection - K-Distance Graph
+# 8. Inferential Statistics - Hypothesis Testing
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -158,6 +167,8 @@ print("ADF Statistic:", result[0])
 print("p-value:", result[1])
 if result[1] > 0.05:
     print("Time series is non-stationary. Differencing is required.")
+else:
+    print("Time series is stationary.")
 
 # Apply ARIMA Model
 plt.figure(figsize=(12, 6))
