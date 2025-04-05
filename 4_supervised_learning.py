@@ -81,30 +81,30 @@ plt.legend()
 plt.show()
 
 # Regression for continuous variables
-X = df_scaled['CreditScore'].values.reshape(-1, 1)
-y = df_scaled['Balance']
+# X = df_scaled['CreditScore'].values.reshape(-1, 1)
+# y = df_scaled['Balance']
 
 # Pearson Correlation Coefficient
-corr, _ = pearsonr(X.flatten(), y)
-print("\nRegression Metrics:")
-print("Pearson Correlation Coefficient:", corr)
+# corr, _ = pearsonr(X.flatten(), y)
+# print("\nRegression Metrics:")
+# print("Pearson Correlation Coefficient:", corr)
 
 # Linear Regression
-reg = LinearRegression()
-reg.fit(X, y)
-y_pred_reg = reg.predict(X)
+# reg = LinearRegression()
+# reg.fit(X, y)
+# y_pred_reg = reg.predict(X)
 
 # Regression performance metrics
-r_squared = r2_score(y, y_pred_reg)
-mse = mean_squared_error(y, y_pred_reg)
-rmse = math.sqrt(mse)
-mae = mean_absolute_error(y, y_pred_reg)
-mape = np.mean(np.abs((y - y_pred_reg) / y)) * 100  # Mean Absolute Percentage Error
-rmsre = np.sqrt(np.mean((y - y_pred_reg) ** 2) / np.mean(y ** 2))  # Root Mean Squared Relative Error
+# r_squared = r2_score(y, y_pred_reg)
+# mse = mean_squared_error(y, y_pred_reg)
+# rmse = math.sqrt(mse)
+# mae = mean_absolute_error(y, y_pred_reg)
+# mape = np.mean(np.abs((y - y_pred_reg) / y)) * 100  # Mean Absolute Percentage Error
+# rmsre = np.sqrt(np.mean((y - y_pred_reg) ** 2) / np.mean(y ** 2))  # Root Mean Squared Relative Error
 
-print(f"R-squared: {r_squared}")
-print(f"Mean Squared Error (MSE): {mse}")
-print(f"Root Mean Squared Error (RMSE): {rmse}")
-print(f"Mean Absolute Error (MAE): {mae}")
-print(f"Mean Absolute Percentage Error (MAPE): {mape}%")
-print(f"Root Mean Squared Relative Error (RMSRE): {rmsre}")
+# print(f"R-squared: {r_squared}")
+# print(f"Mean Squared Error (MSE): {mse}")
+# print(f"Root Mean Squared Error (RMSE): {rmse}")
+# print(f"Mean Absolute Error (MAE): {mae}")
+# print(f"Mean Absolute Percentage Error (MAPE): {mape}%")
+# print(f"Root Mean Squared Relative Error (RMSRE): {rmsre}")
