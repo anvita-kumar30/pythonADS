@@ -55,6 +55,7 @@ model = ARIMA(ts, order=(2,1,2))  # Adjusted based on previous results (p,d,q)
 # q (Moving Average - MA term) = 1 → One past error term is used to improve predictions.
 arima_result = model.fit()
 print(arima_result.summary())
+print(ts)
 
 # Train-Test Split (80% Training, 20% Testing)
 train_size = int(len(ts) * 0.8)
